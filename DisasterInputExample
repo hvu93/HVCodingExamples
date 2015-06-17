@@ -1,0 +1,238 @@
+<head>
+    <!--linking css style sheet-->
+    <link href="css/index.css" rel="stylesheet" type="text/css" />
+    <!--set up the page title-->
+    <title>Queensland State-wide Disaster Information</title>
+    <!--set up meta data for serch engine optimization-->
+    <meta name="Queensland State-wide Disaster Information" content="Queensland Disaster, qld latest update, warnings, disaster area " />
+    <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+    <script type="text/javascript" src="google_dynamic_map.js"></script>
+    <script type="text/javascript" src="disasterinputer.js"></script>
+    <?php session_start(); ?>
+    <?php require 'user_only.php'; ?>
+</head>
+
+<body onLoad="initialize()">
+      <!--use the wrapper class to constrain the web page to 1024px-->
+      <div class="wrapper">
+        <!--set up the header and the menu-->
+        <div class="header">
+          <!--set up the logo as a link to the index page-->
+          <a href="index.php">
+            <img src="../image/combined_header.png" alt="index.php"></img>
+          </a>
+
+      		<!--set up the menu with menu class-->
+          <?php require 'checkuser.php'; ?>
+    	</div>
+        
+		<?php
+			// Set email variables
+			$email_to = 'youremail@address.com';
+			$email_subject = 'Form submission';
+        
+			// Set required fields
+			$required_fields = array('refirstName', 'relastName', 'reemail', 'rephone', 'redateTime', 'reType', 'reincidentLocation', 'reincidentPostcode', 'relat', 'relng','reincidentDescription');
+			
+			// set error messages
+			$error_messages = array(
+				'refirstName' => '<normal style="color:red">Please enter a First Name</normal>',
+				'relastName' => '<normal style="color:red">Please enter a Last Name</normal>',
+				'reemail' => '<normal style="color:red">Please enter a valid Email Address</normal>',
+				'rephone' => '<normal style="color:red">Please enter your phone number</normal>',
+				'redateTime' => '<normal style="color:red">Please enter a valid date</normal>',
+				'reType' => '<normal style="color:red">Please select the type of disaster</normal>',
+				'reincidentLocation' => '<normal style="color:red">Please select the incident zone</normal>',
+				'reincidentPostcode' => '<normal style="color:red">Please enter your postcode</normal>',
+				'relat' => '<normal style="color:red">Please enter the latitude coordinate</normal>',
+				'relng' => '<normal style="color:red">Please enter the longitude coordinate</normal>',
+				'reincidentDescription' => '<normal style="color:red">Please enter a description</normal>'
+			);
+        
+			// Set form status
+			$form_complete = FALSE;
+        
+			// configure validation array
+			$validation = array();
+			
+			// check form submittal
+			if(!empty($_POST)) {
+				// Sanitise POST array
+				foreach($_POST as $key => $value) $_POST[$key] = remove_email_injection(trim($value));
+            
+				// Loop into required fields and make sure they match our needs
+				foreach($required_fields as $field) {		
+					// the field has been submitted?
+					if(!array_key_exists($field, $_POST)) array_push($validation, $field);
+					
+					// check there is information in the field?
+					if($_POST[$field] == '') array_push($validation, $field);
+					
+					// validate the email address supplied
+					if($field == 'csemail') if(!validate_email_address($_POST[$field])) array_push($validation, $field);
+				}
+				
+				// basic validation result
+				if(count($validation) == 0) {
+					// Prepare our content string
+					$email_content = 'New Website Comment: ' . "\n\n";
+					
+					// simple email content
+					foreach($_POST as $key => $value) {
+						if($key != 'submit') $email_content .= $key . ': ' . $value . "\n";
+					}
+                
+					// if validation passed ok then send the email
+			
+					
+					// Update form switch
+					$form_complete = TRUE;
+            	}
+      	  	}
+      	  
+			function validate_email_address($email = FALSE) {
+				return (preg_match('/^[^@\s]+@([-a-z0-9]+\.)+[a-z]{2,}$/i', $email))? TRUE : FALSE;
+			}
+        
+			function remove_email_injection($field = FALSE) {
+			   return (str_ireplace(array("\r", "\n", "%0a", "%0d", "Content-Type:", "bcc:","to:","cc:"), '', $field));
+			}
+     	 date_default_timezone_set('Australia/Brisbane');
+        ?>
+        
+			<script type="text/javascript">
+                var fnameError = '<?php echo $error_messages['refirstName']; ?>';
+                var lnameError = '<?php echo $error_messages['relastName']; ?>';
+                var emailError = '<?php echo $error_messages['reemail']; ?>';
+                var phoneError = '<?php echo $error_messages['rephone']; ?>';
+				var dateTimeError ='<?php echo $error_messages['redateTime'];?>';
+				var typeError = '<?php echo $error_messages['reType']; ?>';
+                var incidentLocationError = '<?php echo $error_messages['reincidentLocation']; ?>';
+                var incidentPostcodetypeError = '<?php echo $error_messages['reincidentPostcode']; ?>';
+                var relatError = '<?php echo $error_messages['relat']; ?>';
+                var relngError = '<?php echo $error_messages['relng']; ?>';
+                var incidentDescriptionError = '<?php echo $error_messages['reincidentDescription']; ?>';
+            </script>
+    
+            <!--use the contentwrapper to order the content in the correct way-->
+            <div class="contentwrapper">
+            <!--set up the side bar-->
+	 
+            <h> Report Disaster Form </h>
+            <p> Please provide the following details to submit a disaster report, our team will review the disaster and review if it is currently happening. Thank you for submitting this disaster report.</p>
+            <div align="center">
+				<?php //if($form_complete === FALSE): ?>
+                <form method="post" action="inputDisasterReport.php">
+            	<table width="800" border="0" cellspacing="1" cellpadding="2">
+
+            <tr>
+                <td width="100">First Name:</td>
+                <td><input name="refirstName" type="text" id="refirstName" value="<?php echo isset($_POST['refirstName'])? $_POST['refirstName'] : ''; ?>" /> </td>
+                <td><?php if(in_array('refirstName', $validation)): ?><span class="error"><?php echo $error_messages['refirstName']; ?></span><?php endif; ?></td>
+            </tr>	
+             
+            <tr>
+            <td width="100"> Last Name: </td>
+                <td><input name="relastName" type="text" id="rlastName" value="<?php echo isset($_POST['refirstName'])? $_POST['relastName'] : ''; ?>" /> </td>
+                <td><?php if(in_array('relastName', $validation)): ?><span class="error"><?php echo $error_messages['relastName']; ?></span><?php endif; ?></td>
+            </tr>	 
+            
+            <tr>
+            <td width="100">Email Address: </td>
+                <td><input name="reemail" type="text" id="reemail" value="<?php echo isset($_POST['reemail'])? $_POST['reemail'] : ''; ?>" /> </td>
+                <td><?php if(in_array('reemail', $validation)): ?><span class="error"><?php echo $error_messages['reemail']; ?></span><?php endif; ?></td>
+            </tr>
+            	 
+            <tr>
+            <td width="100"> Phone Number:</td>
+                <td><input name="rephone" type="text" id="rephone" value="<?php echo isset($_POST['rephone'])? $_POST['rephone'] : ''; ?>" /> </td>
+                <td><?php if(in_array('rephone', $validation)): ?><span class="error"><?php echo $error_messages['rephone']; ?></span><?php endif; ?></td>
+            </tr>	 
+            
+            	 
+            <tr>
+            <td width="100"> Disaster Type:</td>
+            <td><select name="reType" value="<?php echo isset($_POST['reType'])? $_POST['reType'] : ''; ?>" />  
+                <option value="">Select One</option>
+                <option value="BushFire">Bush Fire</option>
+                <option value="Flood">Flood</option>
+                <option value="Hurricane">Hurricane/Cyclone</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Other">Other</option>
+            	</select></td>
+            <td><?php if(in_array('reType', $validation)): ?><span class="error"><?php echo $error_messages['reType']; ?></span><?php endif; ?> </td>
+            </tr>
+
+                <tr>
+
+                  <td width="100">Time of occurence:</small></td>
+                  <td><input name="redateTime" type="text" id="redateTime" value="<?php echo $reDateTime = date("Y-m-d H:i:s"); ?>" /></td>
+                  <td>
+                    <?php if(in_array('redateTime', $validation)): ?>
+                    <span class="error">
+                      <?php echo $error_messages['redateTime']; ?>
+                    </span>
+                    <?php endif; ?>
+                  </td>
+                </tr>
+	
+    
+            <tr>
+            <td width="100"> Incident Location:</td>
+			<td><select name="reincidentLocation" value="<?php echo isset($_POST['reincidentLocation'])? $_POST['reincidentLocation'] : ''; ?>" />
+    			<option value="">Select a Zone </option>
+        		<option value="Central Queensland">Central Queensland </option>
+                <option value="Darling Downs/South West">Darling Downs/South West</option>
+                <option value="Far North Queensland">Far North Queensland </option>
+                <option value="Mackay, Issac and Whitsunday">Mackay, Issac and Whitsunday</option>
+                <option value="North Queensland ">North Queensland </option>
+                <option value="South East Country">South East Country</option>
+                <option value="South East Queensland">South East Queensland</option>
+                <option value="Wide Bay Burnett">Wide Bay Burnett </option>
+    	</select>   </td>
+        <td><?php if(in_array('reincidentLocation', $validation)): ?><span class="error"><?php echo $error_messages['reincidentLocation']; ?></span><?php endif; ?> </td> </tr>	 
+    
+            <tr>
+            <td width="100"> Postcode:</td>
+                <td><input name="reincidentPostcode" type="text" id="reincidentPostcode"value="<?php echo isset($_POST['reincidentPostcode'])? $_POST['reincidentPostcode'] : ''; ?>" /> </td>
+                <td><?php if(in_array('reincidentPostcode', $validation)): ?><span class="error"><?php echo $error_messages['reincidentPostcode']; ?></span><?php endif; ?></td>
+            </tr>	
+            
+            <tr>
+            <td width="100"> Latitude Co-ordinate:</td>
+                <td><input name="relat" type="text" id="relat"value="<?php echo isset($_POST['relat'])? $_POST['relat'] : ''; ?>" /> </td>
+                <td><?php if(in_array('relat', $validation)): ?><span class="error"><?php echo $error_messages['relat']; ?></span><?php endif; ?></td>
+             </tr>	 
+             
+            <tr>
+            <td width="100"> Longitude Co-ordinate:</td>
+                <td><input name="relng" type="text" id="relng"value="<?php echo isset($_POST['relng'])? $_POST['relng'] : ''; ?>" /> </td>
+                <td><?php if(in_array('relng', $validation)): ?><span class="error"><?php echo $error_messages['relng']; ?></span><?php endif; ?></td>
+            </tr>	 
+
+            <tr>
+            <td width="100"> Disaster Description:</td>
+           	<td><textarea name="reincidentDescription" id="reincidentDescription" cols="50" rows="6" value="<?php echo isset($_POST['reincidentDescription'])? $_POST['reincidentDescription'] : ''; ?>" /> </textarea>	
+            <td><?php if(in_array('reincidentDescription', $validation)): ?><span class="error"><?php echo $error_messages['reincidentDescription']; ?></span><?php endif; ?></td>
+            </tr>	
+
+            <td><input name="submit" type="submit" id="submit" value="Submit" />
+            <input name="reset" type="reset" id="reset" value="Reset" />
+            <button><a href="userprivate.php">Back</a></button></td>
+            </tr>
+            <div id="disastermap">
+            <div id="map_canvas" style="width: 300px; height: 480px"></div>
+            </div>
+		</table>
+	</form>
+
+	<?php if ($form_complete === true):  ?>
+        <p>Thank you for sending in a disaster report! The Personnel Manager will review this report.</p>
+    <?php endif; ?>	
+	</div>
+</div>
+</body>
+
+<?php 
+include('footer.php')
+?>
