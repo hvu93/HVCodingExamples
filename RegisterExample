@@ -1,0 +1,203 @@
+<?php
+include("header.php")
+?>
+<?php
+include("subnav.php")
+?>
+<?php
+include("db.php")
+?>
+
+<?php 
+mysql_connect('127.0.0.1','root','') or die(mysql_error()); 
+mysql_select_db("infinity") or die(mysql_error()); 
+ if (isset($_POST['username'], $_POST['password'], $_POST ['email'], $_POST ['f_name'],$_POST ['l_name'], $_POST ['address'],  $_POST ['city'], $_POST ['pcode'], $_POST ['state'] )){
+	$username = $_POST['username'];
+	$password = $_POST['password'];
+	$email = $_POST ['email'];
+	$f_name = $_POST ['f_name'];
+	$l_name = $_POST ['l_name'];
+	$address = $_POST ['address'];
+	$city = $_POST ['city'];
+	$pcode = $_POST ['pcode'];
+	$state = $_POST ['state'];
+
+
+if ($username == "" || $password == "" || $email == "" || $f_name == "" || $l_name == "" || $address == "" || $city == "" || $pcode =="" || $state == "") { 
+echo ""; 
+} 
+else { 
+mysql_query("INSERT INTO members (username, password, email, f_name, l_name, address, city, pcode, state) VALUES('$username', 
+'$password', '$email', '$f_name', '$l_name', '$address', '$city', '$pcode', '$state') ") 
+or die(mysql_error()); 
+} }
+?> 
+<?php
+// Set required fields
+$required_fields = array('username','password','email','f_name','l_name','address', 'city', 'pcode', 'state' );
+
+// set error messages
+$error_messages = array(
+	'username' => '<normal style="color:red">Please enter a username.</normal>',
+	'password' => '<normal style="color:red">Please enter a password.</normal>',
+	'email' => '<normal style="color:red">Please enter a valid email.</normal>',
+	'f_name' => '<normal style="color:red">Please enter your first name.</normal>',
+	'l_name' => '<normal style="color:red">Please enter your last name.</normal>',
+	'address' => '<normal style="color:red">Please enter your address.</normal>',
+	'city' => '<normal style="color:red">Please enter your city.</normal>',
+	'pcode' => '<normal style="color:red">Please enter your postcode.</normal>',
+	'state' => '<normal style="color:red">Please select a state.</normal>',
+
+);
+
+// Set form status
+$form_complete = FALSE;
+
+// configure validation array
+$validation = array();
+
+// check form submittal
+if(!empty($_POST)) {
+	// Sanitise POST array
+	foreach($_POST as $key => $value) $_POST[$key] = remove_email_injection(trim($value));
+
+	foreach($required_fields as $field) {		
+	
+		if(!array_key_exists($field, $_POST)) array_push($validation, $field);
+	
+		if($_POST[$field] == '') array_push($validation, $field);
+	
+		if($field == 'email') if(!validate_email_address($_POST[$field])) array_push($validation, $field);
+	}
+	
+	// basic validation result
+	if(count($validation) == 0) {
+		
+		$form_complete = TRUE;
+	}
+}
+
+function validate_email_address($email = FALSE) {
+	return (preg_match('/^[^@\s]+@([-a-z0-9]+\.)+[a-z]{2,}$/i', $email))? TRUE : FALSE;
+}
+
+function remove_email_injection($field = FALSE) {
+   return (str_ireplace(array("\r", "\n", "%0a", "%0d", "Content-Type:", "bcc:","to:","cc:"), '', $field));
+}
+?>
+<script type="text/javascript">
+		var usernameError = '<?php echo $error_messages['username']; ?>';
+		var passwordError = '<?php echo $error_messages['password']; ?>';
+		var emailError = '<?php echo $error_messages['email']; ?>';
+		var fnameError = '<?php echo $error_messages['f_name']; ?>';
+		var lnameError = '<?php echo $error_messages['l_name']; ?>';
+		var addressError = '<?php echo $error_messages['address']; ?>';
+		var cityError = '<?php echo $error_messages['city']; ?>';
+		var pcodeError ='<?php echo $error_messages['pcode'];?>';
+		var stateError = '<?php echo $error_messages['state']; ?>';
+	</script>
+
+<div id="pcontent">
+<div id="info">
+<div id="regtable">
+<table width="300" border="0" align="center" cellpadding="0" 
+cellspacing="1" 
+bgcolor="#FFFFFF"> 
+<?php //if($form_complete === FALSE): ?>	
+<tr> 
+<form name="form6" method="post" action="register.php"> 
+ 
+<td> 
+<table width="700" border="0" align="center" cellpadding="0" 
+cellspacing="1"> 
+<tr> 
+<td colspan="3"><br/> <br/><strong>New Member Registration </strong></td> 
+</tr>  
+<table width="100%" border="0" cellpadding="3" cellspacing="1" 
+bgcolor="#FFFFFF"> 
+<tr> 
+<td>Username</td> 
+<td>:</td> 
+<td><input name="username" type="text" id="username" value="<?php echo isset($_POST['username'])? $_POST['username'] : ''; ?>" /> 
+	<?php if(in_array('username', $validation)): ?><span class="error"><?php echo $error_messages['username']; ?></span><?php endif; ?>
+</td> 
+</tr> 
+<tr> 
+<td>Password</td> 
+<td>:</td> 
+<td><input name="password" type="password" id="password" value="<?php echo isset($_POST['password'])? $_POST['password'] : ''; ?>" /> 
+	<?php if(in_array('password', $validation)): ?><span class="error"><?php echo $error_messages['password']; ?></span><?php endif; ?></td> 
+</tr> 
+<tr> 
+<td>Email</td> 
+<td>:</td> 
+<td><input name="email" type="text" id="email" value="<?php echo isset($_POST['email'])? $_POST['email'] : ''; ?>" /> 
+	<?php if(in_array('email', $validation)): ?><span class="error"><?php echo $error_messages['email']; ?></span><?php endif; ?></td> 
+</tr> 
+<tr> 
+<td>First Name</td> 
+<td>:</td> 
+<td><input name="f_name" type="text" id="f_name" value="<?php echo isset($_POST['f_name'])? $_POST['f_name'] : ''; ?>" /> 
+	<?php if(in_array('f_name', $validation)): ?><span class="error"><?php echo $error_messages['f_name']; ?></span><?php endif; ?></td> 
+</tr> 
+<tr> 
+<td>Last Name</td> 
+<td>:</td> 
+<td><input name="l_name" type="text" id="l_name" value="<?php echo isset($_POST['l_name'])? $_POST['l_name'] : ''; ?>" /> 
+	<?php if(in_array('l_name', $validation)): ?><span class="error"><?php echo $error_messages['l_name']; ?></span><?php endif; ?></td> 
+</tr> 
+</tr> 
+</tr> 
+<td>Address</td> 
+<td>:</td> 
+<td><input name="address" type="text" id="address" value="<?php echo isset($_POST['address'])? $_POST['address'] : ''; ?>" /> 
+	<?php if(in_array('address', $validation)): ?><span class="error"><?php echo $error_messages['address']; ?></span><?php endif; ?></td> 
+</tr> 
+</tr> 
+<td>City</td> 
+<td>:</td> 
+<td><input name="city" type="text" id="city" value="<?php echo isset($_POST['city'])? $_POST['city'] : ''; ?>" /> 
+	<?php if(in_array('city', $validation)): ?><span class="error"><?php echo $error_messages['city']; ?></span><?php endif; ?></td> 
+</tr> 
+</tr> 
+<td>Postcode</td> 
+<td>:</td> 
+<td><input name="pcode" type="text" id="pcode" value="<?php echo isset($_POST['pcode'])? $_POST['pcode'] : ''; ?>" /> 
+	<?php if(in_array('pcode', $validation)): ?><span class="error"><?php echo $error_messages['pcode']; ?></span><?php endif; ?></td> 
+</tr>
+</tr> 
+<td>State</td> 
+<td>:</td> 
+<td>
+<select name = "state" onchange = "selectremove()"> 
+								<option value="">State</option>
+								<option value="QLD">QLD</option>	<!-- selectable options for the user, declaring value of options assist javascripting purposes-->
+								<option value="NSW">NSW</option>
+								<option value="VIC">VIC</option>
+								<option value="WA">WA</option>
+								<option value="Tas">TAS</option>
+								<option value="NT">NT</option>
+						</select></td> 
+</tr>  
+<tr> 
+<td></td> 
+<td></td> 
+<td><input name="submit" type="submit" id="submit" value="Register" /> 
+<input name="reset" type="reset" id="reset" value="Reset" />
+</td> 
+<td> </td>
+</td> </table>
+
+</form> 
+</tr> 
+</table>
+<?php if ($form_complete === true):  ?>
+	<p>Thank you for your Registering to Infinty Games! You can now log in using your username and password details.</p>
+	<?php endif; ?>
+</div>
+</div>
+    </div>
+
+<?php
+include("footer.php")
+?>
