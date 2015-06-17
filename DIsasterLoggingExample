@@ -1,0 +1,291 @@
+<head>
+    <!--linking css style sheet-->
+    <link href="css/index.css" rel="stylesheet" type="text/css" />
+    <!--set up the page title-->
+    <title>Queensland State-wide Disaster Information</title>
+    <!--set up meta data for serch engine optimization-->
+    <meta name="Queensland State-wide Disaster Information" content="Queensland Disaster, qld latest update, warnings, disaster area " />
+    <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+    <script type="text/javascript" src="google_dynamic_map.js"></script>
+    <script type="text/javascript" src="disasterlogging.js"></script>
+    <!--Checking access permission-->
+    <?php session_start(); ?>
+    <?php require 'access_control.php'; ?>
+    <?php require 'admin_only.php'; ?>
+</head>
+
+<body onLoad="initialize()">
+  <!--use the wrapper class to constrain the web page to 1024px-->
+  <div class="wrapper">
+        <!--set up the header and the menu-->
+        <div class="header">
+              <!--set up the logo as a link to the index page-->
+              <a href="index.php">
+                <img src="../image/combined_header.png" alt="index.php"></img>
+              </a>
+
+      	<!--set up the menu with menu class-->
+          <?php require 'checkuser.php'; ?>
+          
+    	</div>
+    
+		<?php
+        
+			// Set email variables
+			$email_to = 'youremail@address.com';
+			$email_subject = 'Form submission';
+        
+			// Set required fields
+			$required_fields = array('disTitle', 'reId','disDateTime', 'disType', 'disLocation', 'dislat', 'dislng', 'disPostcode', 'disDescription', 'disStatus', 'disCreateBy', 'disUpdateDateTime', 'disUpdateByPerson', 'disUpdateByDept');
+			
+			// set error messages
+        	$error_messages = array(
+            'disTitle' => '<normal style="color:red">Please enter a Title</normal>',
+            'reId' => '<normal style="color:red">Please enter a Title</normal>',
+            'disDateTime' => '<normal style="color:red">Please enter a Date and Time</normal>',
+            'disType' => '<normal style="color:red">Please enter select a Type</normal>',
+            'disLocation' => '<normal style="color:red">Please select a Location</normal>',
+            'dislat' => '<normal style="color:red">Please enter a latitude Coordinate</normal>',
+            'dislng' => '<normal style="color:red">Please enter a longitude Coordinate</normal>',
+            'disPostcode' => '<normal style="color:red">Please enter a postcode</normal>',
+            'disDescription' => '<normal style="color:red">Please enter a description</normal>',
+            'disStatus' => '<normal style="color:red">Please select a status</normal>',
+            'disCreateBy' => '<normal style="color:red">Please enter your name</normal>',
+            'disUpdateDateTime' => '<normal style="color:red">Please enter the date and time</normal>',
+            'disUpdateByPerson' => '<normal style="color:red">Please enter your name</normal>',
+            'disUpdateByDept' => '<normal style="color:red">Please enter your department</normal>',
+        	);
+        
+			// Set form status
+			$form_complete = FALSE;
+			
+			// configure validation array
+			$validation = array();
+        
+			// check form submittal
+			if(!empty($_POST)) {
+				// Sanitise POST array
+				foreach($_POST as $key => $value) $_POST[$key] = remove_email_injection(trim($value));
+				
+				// Loop into required fields and make sure they match our needs
+				foreach($required_fields as $field) {		
+					// the field has been submitted?
+					if(!array_key_exists($field, $_POST)) array_push($validation, $field);
+					
+					// check there is information in the field?
+					if($_POST[$field] == '') array_push($validation, $field);
+					
+					// validate the email address supplied
+					if($field == 'csemail') if(!validate_email_address($_POST[$field])) array_push($validation, $field);
+				}
+            
+				// basic validation result
+				if(count($validation) == 0) {
+					// Prepare our content string
+					$email_content = 'New Website Comment: ' . "\n\n";
+					
+					// simple email content
+					foreach($_POST as $key => $value) {
+						if($key != 'submit') $email_content .= $key . ': ' . $value . "\n";
+                	}
+                
+					// if validation passed ok then send the email
+			
+					
+					// Update form switch
+					$form_complete = TRUE;
+				}
+			}
+        
+			function validate_email_address($email = FALSE) {
+				return (preg_match('/^[^@\s]+@([-a-z0-9]+\.)+[a-z]{2,}$/i', $email))? TRUE : FALSE;
+			}
+        
+			function remove_email_injection($field = FALSE) {
+			   return (str_ireplace(array("\r", "\n", "%0a", "%0d", "Content-Type:", "bcc:","to:","cc:"), '', $field));
+			}
+        date_default_timezone_set('Australia/Brisbane');
+        ?>
+        
+		<script type="text/javascript">
+			var disTitleError = '<?php echo $error_messages['disTitle']; ?>';
+			var reIdError = '<?php echo $error_messages['reId']; ?>';
+			var disDateTimeError = '<?php echo $error_messages['disDateTime']; ?>';
+			var disTypeError = '<?php echo $error_messages['disType']; ?>';
+			var disLocationError = '<?php echo $error_messages['disLocation']; ?>';
+			var dislatError = '<?php echo $error_messages['dislat']; ?>';
+			var dislngError = '<?php echo $error_messages['dislng']; ?>';
+			var disPostcodeError = '<?php echo $error_messages['disPostcode']; ?>';
+			var disDescriptionError ='<?php echo $error_messages['disDescription'];?>';
+			var disStatusError = '<?php echo $error_messages['disStatus']; ?>';
+			var disCreateByError = '<?php echo $error_messages['disCreateBy']; ?>';
+			var disUpdateDateTimeError = '<?php echo $error_messages['disUpdateDateTime']; ?>';
+			var disUpdateByPersonError = '<?php echo $error_messages['disUpdateByPerson']; ?>';
+			var disUpdateByDeptError = '<?php echo $error_messages['disUpdateByDept']; ?>';
+		</script>
+    
+        <!--use the contentwrapper to order the content in the correct way-->
+        <div class="contentwrapper">
+          <!--set up the side bar-->
+	  
+            <h> Report Disaster Form </h>
+            <p> Please provide the following details to submit a disaster report, our team will review the disaster and review if it is currently happening. Thank you for submitting this disaster report.</p>   
+        <div align="center">
+        <?php //if($form_complete === FALSE): ?>
+        <form method="post" action="inputDisasterLogging.php">
+        <table width="800" border="0" cellspacing="1" cellpadding="2">
+
+            <tr>
+            <td width="100"> Title:</td>
+            <td><input name="disTitle" type="text" id="disTitle" value="<?php echo isset($_POST['disTitle'])? $_POST['disTitle'] : ''; ?>" /> </td>
+            <td><?php if(in_array('disTitle', $validation)): ?><span class="error"><?php echo $error_messages['disTitle']; ?></span><?php endif; ?></td>
+            </tr>	 
+
+            <tr>    
+            <td width="100">Report ID:</td>
+            <td><input name="reId" type="text" id="reId" value="<?php echo isset($_POST['reId'])? $_POST['reId'] : ''; ?>" /> </td>
+            <td><?php if(in_array('reId', $validation)): ?><span class="error"><?php echo $error_messages['reId']; ?></span><?php endif; ?></td>
+            </tr>
+    
+            <tr>
+        	<td width="100"> Date and Time: </td>
+            <td><input name="disDateTime" type="text" id="disDateTime" value="<?php echo $reDateTime = date("Y-m-d H:i:s"); ?>" /> 
+            </td>
+            <td><?php if(in_array('disDateTime', $validation)): ?><span class="error"><?php echo $error_messages['disDateTime']; ?></span><?php endif; ?></td>
+            </tr>
+    
+            <tr>
+            <td width="100"> Type: </td>
+            <td><select name="disType" value="<?php echo isset($_POST['disType'])? $_POST['disType'] : ''; ?>" /> 
+                    <option value="">Select One</option>
+                    <option value="BushFire">Bush Fire</option>
+                    <option value="Flood">Flood</option>
+                    <option value="Hurricane">Hurricane/Cyclone</option>
+                    <option value="Electrical">Electrical</option>
+                    <option value="Other">Other</option>
+            	</select></td>
+    		<td><?php if(in_array('disType', $validation)): ?><span class="error"><?php echo $error_messages['disType']; ?></span><?php endif; ?></td>
+			</tr>
+
+            <tr>
+            <td width="100"> Location:</td>
+            <td><select name="disLocation" value="<?php echo isset($_POST['disLocation'])? $_POST['disLocation'] : ''; ?>" /> 
+                        <option value="">Select a Zone </option>
+                        <option value="Central Queensland">Central Queensland </option>
+                        <option value="Darling Downs/South West">Darling Downs/South West</option>
+                        <option value="Far North Queensland">Far North Queensland </option>
+                        <option value="Mackay, Issac and Whitsunday">Mackay, Issac and Whitsunday</option>
+                        <option value="North Queensland ">North Queensland </option>
+                        <option value="South East Country">South East Country</option>
+                        <option value="South East Queensland">South East Queensland</option>
+                        <option value="Wide Bay Burnett">Wide Bay Burnett </option>
+            	</select></td>
+           	<td> <?php if(in_array('disLocation', $validation)): ?><span class="error"><?php echo $error_messages['disLocation']; ?></span><?php endif; ?></td>
+           	</tr>
+
+            <tr>
+            <td width="100"> Latitude Coordinate:</td>
+            <td><input name="dislat" type="text" id="dislat" value="<?php echo isset($_POST['dislat'])? $_POST['dislat'] : ''; ?>" />  </td>
+            <td><?php if(in_array('dislat', $validation)): ?><span class="error"><?php echo $error_messages['dislat']; ?></span><?php endif; ?></td>
+            </tr>
+    
+            <tr>	
+            <td width="100"> Longitude Coordinate:</td>
+            <td><input name="dislng" type="text" id="dislng" value="<?php echo isset($_POST['dislng'])? $_POST['dislng'] : ''; ?>" />  </td>
+            <td><?php if(in_array('dislng', $validation)): ?><span class="error"><?php echo $error_messages['dislng']; ?></span><?php endif; ?></td>
+            </tr>
+    
+            <tr>
+            <td width="100"> Postcode:</td>
+            <td><input name="disPostcode" type="text" id="disPostcode" value="<?php echo isset($_POST['disPostcode'])? $_POST['disPostcode'] : ''; ?>" />  </td>
+            <td><?php if(in_array('disPostcode', $validation)): ?><span class="error"><?php echo $error_messages['disPostcode']; ?></span><?php endif; ?></td>
+            </tr>
+    
+            <tr>
+            <td width="100"> Disaster Description:<br/></td>
+            <td><textarea name="disDescription" id="disUpdateDateTime" cols="50" rows="6" value="<?php echo isset($_POST['disDescription'])? $_POST['disDescription'] : ''; ?>" /> </textarea></td>
+            <td><?php if(in_array('disDescription', $validation)): ?><span class="error"><?php echo $error_messages['disDescription']; ?></span><?php endif; ?></td>
+            </tr>
+    
+            <tr>
+            <td width="100"> Status:</td>
+            <td><select name="disStatus" value="<?php echo isset($_POST['disStatus'])? $_POST['disStatus'] : ''; ?>" />
+                        <option value="">Select a Status </option>
+                        <option value="Warning">Warning</option>
+                        <option value="Starting">Starting</option>
+                        <option value="Ongoing">Ongoing</option>
+                        <option value="Ended">Ended</option>
+            </select></td>
+            <td><?php if(in_array('disStatus', $validation)): ?><span class="error"><?php echo $error_messages['disStatus']; ?></span><?php endif; ?></td>
+            </tr>
+    
+            <tr>
+            <td width="100"> Created By:</td>
+            <td><select name="disCreateBy" value="<?php echo isset($_POST['disCreateBy'])? $_POST['disCreateBy'] : ''; ?>" />
+                        <option value="">Select a Name</option>
+                        <option value="John Hegarty">John Hegarty</option>
+                        <option value="Joshua Khoury">Joshua Khoury</option>
+                        <option value="Hoa Vu">Hoa Vu</option>
+                        <option value="Daniel Warrener">Daniel Warrener</option>
+                        <option value="Ken Wong">Ken Wong</option>
+            </select></td>
+            <td><?php if(in_array('disCreateBy', $validation)): ?><span class="error"><?php echo $error_messages['disCreateBy']; ?></span><?php endif; ?></td>
+            </tr>
+
+            <tr>
+            <td width="100"> Time Updated Disaster:</td>
+            <td><input name="disUpdateDateTime" type="text" id="disUpdateDateTime" value="<?php echo $reDateTime = date("Y-m-d H:i:s"); ?>" /> 
+            </td>
+            <td><?php if(in_array('disUpdateDateTime', $validation)): ?><span class="error"><?php echo $error_messages['disUpdateDateTime']; ?></span><?php endif; ?></td>
+            </tr>
+            
+            <tr>
+            <td width="100"> Person Assigned:</td>
+          	<td><select name="disUpdateByPerson" value="<?php echo isset($_POST['disUpdateByPerson'])? $_POST['disUpdateByPerson'] : ''; ?>" />
+                      <option value="">Select a Name</option>
+                        <option value="John Hegarty">John Hegarty</option>
+                        <option value="Joshua Khoury">Joshua Khoury</option>
+                        <option value="Hoa Vu">Hoa Vu</option>
+                        <option value="Daniel Warrener">Daniel Warrener</option>
+                        <option value="Ken Wong">Ken Wong</option>
+            </select></td> 
+            <td> <?php if(in_array('disUpdateByPerson', $validation)): ?><span class="error"><?php echo $error_messages['disUpdateByPerson']; ?></span><?php endif; ?></td>
+            </tr>
+    
+            <tr>
+            <td width="100"> Department of Person Assigned:</td>
+            <td><select name="disUpdateByDept" value="<?php echo isset($_POST['disUpdateByDept'])? $_POST['disUpdateByDept'] : ''; ?>" />
+                        <option value="">Select Department</option>
+                        <option value="Fire Department">Fire Department</option>
+                        <option value="Flood Department">Flood Department</option>
+                        <option value="Hurricane/Cyclone Department">Hurricane/Cyclone Department</option>
+                        <option value="Electrical Department">Electrical Department</option>
+                        <option value="QLDDBAdmin">QLD DB Administration</option>
+                        <option value="Other">Other</option>
+            </select></td> 
+            <td> <?php if(in_array('disUpdateByDept', $validation)): ?><span class="error"><?php echo $error_messages['disUpdateByDept']; ?></span><?php endif; ?></td>
+            </tr>
+            
+            <tr>
+            <td witdh="100"></td>
+            <td><input name="submit" type="submit" id="submit" value="Submit" />
+                <input name="reset" type="reset" id="reset" value="Reset" />
+                <button><a href="adminprivate.php">Back</a></button></td>
+			</tr>
+            <div id="disastermap">
+            <div id="map_canvas" style="width: 300px; height: 480px"></div>
+            </div>
+			</table>
+
+	</form>
+
+		<?php if ($form_complete === true):  ?>
+            <p>Disaster has been Logged, you can now view it on the <a href="latest.php">current disasters </a>page.</p>
+        <?php endif; ?>
+    </div>
+</div>
+</body>
+
+<?php 
+include('footer.php')
+?>
